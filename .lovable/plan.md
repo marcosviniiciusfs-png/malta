@@ -1,61 +1,64 @@
 
 
-# Forcar Lead no Funil Correto (Anti-Automacao Kommo)
+# Enviar Simulação para WhatsApp 81993797051
 
-## Problema
-O lead esta sendo criado no funil "TRAFEGO PAGO" corretamente, mas uma **automacao interna do Kommo** move o lead automaticamente para o "Funil de Vendas" na etapa "Ligacao" logo apos a criacao. Isso acontece em milessegundos, antes mesmo da nossa verificacao.
+## Objetivo
+Quando o lead clicar em "Finalizar Simulação", além de enviar para o Make (planilha) e Kommo (CRM), abrir uma conversa no WhatsApp **(81) 99379-7051** com uma mensagem pré-formatada contendo todos os dados da simulação.
 
-## Solucao
-Adicionar um **PATCH forcado** apos a criacao do lead, com um pequeno delay para deixar a automacao do Kommo rodar primeiro, e entao sobrescrever o pipeline/status de volta para o correto.
+## Como vai funcionar
 
-## O que sera alterado
+1. O usuário preenche o formulário e clica em **Finalizar Simulação**
+2. O sistema envia os dados para Make e Kommo (como já faz hoje)
+3. **Novo:** Abre uma nova aba do navegador com `https://wa.me/5581993797051?text=...` contendo a mensagem formatada
+4. O usuário é redirecionado para `/obrigado` normalmente
 
-### Edge Function (`supabase/functions/send-to-kommo/index.ts`)
+A mensagem chegará no WhatsApp **81 99379-7051** já pronta — basta o lead apertar enviar (ou já dispara automaticamente dependendo do dispositivo).
 
-Apos criar o lead e adicionar a nota, vamos:
-
-1. **Aguardar 2 segundos** -- tempo suficiente para qualquer automacao do Kommo mover o lead
-2. **Forcar PATCH** -- chamar `PATCH /api/v4/leads/{leadId}` com:
-   - `pipeline_id: 12050999` (TRAFEGO PAGO)
-   - `status_id: 92979627` (Etapa de leads de entrada)
-   - Isso sobrescreve qualquer mudanca feita pela automacao
-3. **Verificar novamente** -- fazer o GET de verificacao **depois** do PATCH para confirmar que o lead ficou onde deve
-4. **Retry no PATCH** -- se o PATCH falhar, tentar novamente (usa o mesmo `fetchWithRetry` que ja existe)
-
-### Fluxo atualizado
+## Formato da mensagem no WhatsApp
 
 ```text
-1. POST /leads/complex  -->  Cria lead no funil correto
-2. POST /leads/{id}/notes  -->  Adiciona nota com detalhes
-3. Aguarda 2 segundos  -->  Deixa automacao do Kommo rodar
-4. PATCH /leads/{id}  -->  Forca pipeline_id + status_id de volta
-5. GET /leads/{id}  -->  Verifica se esta no lugar certo
-6. Retorna resultado com verified=true/false
+🏠 *Nova Simulação de Crédito*
+
+👤 *Nome:* João da Silva
+📱 *WhatsApp:* (11) 99999-9999
+📍 *Cidade:* Recife
+
+💰 *Detalhes da Simulação:*
+• Tipo de Bem: Imóvel
+• Valor Pretendido: R$ 200.000,00
+• Valor de Entrada: R$ 30.000,00
+• Parcela Ideal: R$ 1.500,00
+
+📅 Data: 20/04/2026
 ```
 
-### Nenhuma alteracao no frontend
-Apenas a edge function sera modificada. O frontend (`Simulator.tsx` e `ThankYou.tsx`) ja esta preparado para receber o campo `verified`.
+Campos formatados em **negrito** (sintaxe `*texto*` do WhatsApp), com emojis para facilitar leitura, separação clara entre dados pessoais e dados financeiros.
 
-## Secao tecnica
+## Detalhes técnicos
 
-O trecho novo sera inserido entre a adicao da nota (linha ~184) e a verificacao existente (linha ~187):
+### Arquivo alterado: `src/components/Simulator.tsx`
 
-```typescript
-// --- Force lead into correct pipeline/status (override Kommo automations) ---
-console.log(`[${traceId}] Aguardando 2s para automacoes do Kommo...`);
-await new Promise((r) => setTimeout(r, 2000));
+Dentro de `handleFinish`, após o envio bem-sucedido para Make/Kommo e antes do `navigate("/obrigado")`:
 
-const patchPayload = {
-  pipeline_id: PIPELINE_ID,
-  status_id: STATUS_ID,
-};
+1. Construir a string da mensagem com todos os campos do `formData`
+2. Codificar com `encodeURIComponent()` para uso seguro em URL
+3. Montar a URL: `https://wa.me/5581993797051?text=${encoded}`
+4. Abrir em nova aba: `window.open(whatsappUrl, "_blank")`
 
-const patchRes = await fetchWithRetry(
-  `https://${KOMMO_API_DOMAIN}/api/v4/leads/${leadId}`,
-  { method: 'PATCH', headers: authHeaders, body: JSON.stringify(patchPayload) }
-);
-console.log(`[${traceId}] PATCH forçado: ${patchRes.status}`);
-```
+O número será formatado com código do país: **55** (Brasil) + **81** (DDD Pernambuco) + **993797051** = `5581993797051`.
 
-## Observacao importante
-Se o Kommo tiver uma automacao que roda **continuamente** (nao apenas na criacao), ela pode mover o lead de novo depois do nosso PATCH. Nesse caso, a solucao definitiva seria **desativar ou ajustar a automacao dentro do Kommo**. Mas o PATCH forcado resolve o caso mais comum (automacao que roda apenas no momento da criacao).
+### Comportamento em caso de falha
+- Se Make/Kommo falharem, **não** abrimos o WhatsApp (mantemos o comportamento atual de mostrar erro)
+- O WhatsApp só abre quando a submissão é bem-sucedida, garantindo que o lead já está registrado no CRM/planilha antes do contato
+
+### Considerações de UX
+- `window.open` em nova aba pode ser bloqueado por popup blockers em alguns navegadores. Como ele é disparado dentro de um handler de clique do usuário (`handleFinish` foi acionado pelo botão), a maioria dos navegadores permite normalmente
+- Em mobile, o link `wa.me` abre o app do WhatsApp diretamente
+- Em desktop, abre o WhatsApp Web
+
+## Critério de aceite
+Após preencher e finalizar a simulação:
+1. Os dados continuam sendo enviados para Make e Kommo (sem regressão)
+2. Uma nova aba abre no WhatsApp com a conversa para **81 99379-7051** já com a mensagem formatada pronta para envio
+3. O usuário é redirecionado para `/obrigado`
+
