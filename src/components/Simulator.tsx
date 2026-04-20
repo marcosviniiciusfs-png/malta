@@ -174,16 +174,16 @@ const Simulator = () => {
         // Open WhatsApp with formatted simulation message
         const todayBR = new Date().toLocaleDateString("pt-BR");
         const waMessage =
-          `🏠 *Nova Simulação de Crédito*\n\n` +
-          `👤 *Nome:* ${formData.fullName.trim()}\n` +
-          `📱 *WhatsApp:* ${formData.whatsapp}\n` +
-          `📍 *Cidade:* ${formData.city.trim()}\n\n` +
-          `💰 *Detalhes da Simulação:*\n` +
-          `• Tipo de Bem: ${formData.propertyType}\n` +
-          `• Valor Pretendido: ${formData.creditAmount}\n` +
-          `• Valor de Entrada: ${downPaymentValue}\n` +
-          `• Parcela Ideal: ${formData.monthlyPayment}\n\n` +
-          `📅 Data: ${todayBR}`;
+          `\u{1F3E0} *Nova Simula\u00E7\u00E3o de Cr\u00E9dito*\n\n` +
+          `\u{1F464} *Nome:* ${formData.fullName.trim()}\n` +
+          `\u{1F4F1} *WhatsApp:* ${formData.whatsapp}\n` +
+          `\u{1F4CD} *Cidade:* ${formData.city.trim()}\n\n` +
+          `\u{1F4B0} *Detalhes da Simula\u00E7\u00E3o:*\n` +
+          `\u{1F3F7}\u{FE0F} Tipo de Bem: ${formData.propertyType}\n` +
+          `\u{1F4B5} Valor Pretendido: ${formData.creditAmount}\n` +
+          `\u{1F4B3} Valor de Entrada: ${downPaymentValue}\n` +
+          `\u{1F4C5} Parcela Ideal: ${formData.monthlyPayment}\n\n` +
+          `\u{23F0} Data: ${todayBR}`;
         const whatsappUrl = `https://wa.me/5581993797051?text=${encodeURIComponent(waMessage)}`;
         window.open(whatsappUrl, "_blank");
 
