@@ -170,6 +170,23 @@ const Simulator = () => {
             variant: "destructive",
           });
         }
+
+        // Open WhatsApp with formatted simulation message
+        const todayBR = new Date().toLocaleDateString("pt-BR");
+        const waMessage =
+          `🏠 *Nova Simulação de Crédito*\n\n` +
+          `👤 *Nome:* ${formData.fullName.trim()}\n` +
+          `📱 *WhatsApp:* ${formData.whatsapp}\n` +
+          `📍 *Cidade:* ${formData.city.trim()}\n\n` +
+          `💰 *Detalhes da Simulação:*\n` +
+          `• Tipo de Bem: ${formData.propertyType}\n` +
+          `• Valor Pretendido: ${formData.creditAmount}\n` +
+          `• Valor de Entrada: ${downPaymentValue}\n` +
+          `• Parcela Ideal: ${formData.monthlyPayment}\n\n` +
+          `📅 Data: ${todayBR}`;
+        const whatsappUrl = `https://wa.me/5581993797051?text=${encodeURIComponent(waMessage)}`;
+        window.open(whatsappUrl, "_blank");
+
         setFormData({
           propertyType: "",
           creditAmount: "",
