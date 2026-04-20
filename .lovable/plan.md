@@ -1,64 +1,51 @@
 
 
-# Enviar Simulação para WhatsApp 81993797051
+# Corrigir Emojis Quebrados na Mensagem do WhatsApp
 
-## Objetivo
-Quando o lead clicar em "Finalizar Simulação", além de enviar para o Make (planilha) e Kommo (CRM), abrir uma conversa no WhatsApp **(81) 99379-7051** com uma mensagem pré-formatada contendo todos os dados da simulação.
+## Problema
+Os emojis (🏠 👤 📱 📍 💰 📅) estão chegando como `�` no WhatsApp porque a mensagem está sendo codificada/transmitida sem UTF-8 adequado em algum ponto do caminho.
 
-## Como vai funcionar
+## Causa
+O `encodeURIComponent` no JavaScript já lida com UTF-8 corretamente, então os emojis deveriam funcionar. O problema mais provável é que o arquivo `Simulator.tsx` foi salvo sem encoding UTF-8, ou os caracteres emoji foram corrompidos durante a edição anterior. Quando o navegador lê o arquivo com encoding errado, os emojis viram `�` antes mesmo de chegarem ao `encodeURIComponent`.
 
-1. O usuário preenche o formulário e clica em **Finalizar Simulação**
-2. O sistema envia os dados para Make e Kommo (como já faz hoje)
-3. **Novo:** Abre uma nova aba do navegador com `https://wa.me/5581993797051?text=...` contendo a mensagem formatada
-4. O usuário é redirecionado para `/obrigado` normalmente
+## Solução
+Reescrever os emojis no `src/components/Simulator.tsx` usando **escapes Unicode** (`\u{XXXX}`) em vez dos caracteres emoji diretos. Isso garante que, independente do encoding do arquivo, os emojis serão renderizados corretamente em runtime.
 
-A mensagem chegará no WhatsApp **81 99379-7051** já pronta — basta o lead apertar enviar (ou já dispara automaticamente dependendo do dispositivo).
+## O que será alterado
 
-## Formato da mensagem no WhatsApp
+### Arquivo: `src/components/Simulator.tsx`
 
-```text
-🏠 *Nova Simulação de Crédito*
+Substituir a construção da `waMessage` para usar escapes Unicode:
 
-👤 *Nome:* João da Silva
-📱 *WhatsApp:* (11) 99999-9999
-📍 *Cidade:* Recife
-
-💰 *Detalhes da Simulação:*
-• Tipo de Bem: Imóvel
-• Valor Pretendido: R$ 200.000,00
-• Valor de Entrada: R$ 30.000,00
-• Parcela Ideal: R$ 1.500,00
-
-📅 Data: 20/04/2026
+```typescript
+const waMessage =
+  `\u{1F3E0} *Nova Simulação de Crédito*\n\n` +              // 🏠 Casa
+  `\u{1F464} *Nome:* ${formData.fullName.trim()}\n` +         // 👤 Pessoa
+  `\u{1F4F1} *WhatsApp:* ${formData.whatsapp}\n` +            // 📱 Celular
+  `\u{1F4CD} *Cidade:* ${formData.city.trim()}\n\n` +         // 📍 Pin localização
+  `\u{1F4B0} *Detalhes da Simulação:*\n` +                    // 💰 Saco de dinheiro
+  `\u{1F3F7}\u{FE0F} Tipo de Bem: ${formData.propertyType}\n` +  // 🏷️ Etiqueta
+  `\u{1F4B5} Valor Pretendido: ${formData.creditAmount}\n` +     // 💵 Nota dinheiro
+  `\u{1F4B3} Valor de Entrada: ${downPaymentValue}\n` +          // 💳 Cartão
+  `\u{1F4C5} Parcela Ideal: ${formData.monthlyPayment}\n\n` +    // 📅 Calendário
+  `\u{23F0} Data: ${todayBR}`;                                   // ⏰ Despertador
 ```
 
-Campos formatados em **negrito** (sintaxe `*texto*` do WhatsApp), com emojis para facilitar leitura, separação clara entre dados pessoais e dados financeiros.
+### Mapeamento dos ícones (mais profissional e contextual)
 
-## Detalhes técnicos
-
-### Arquivo alterado: `src/components/Simulator.tsx`
-
-Dentro de `handleFinish`, após o envio bem-sucedido para Make/Kommo e antes do `navigate("/obrigado")`:
-
-1. Construir a string da mensagem com todos os campos do `formData`
-2. Codificar com `encodeURIComponent()` para uso seguro em URL
-3. Montar a URL: `https://wa.me/5581993797051?text=${encoded}`
-4. Abrir em nova aba: `window.open(whatsappUrl, "_blank")`
-
-O número será formatado com código do país: **55** (Brasil) + **81** (DDD Pernambuco) + **993797051** = `5581993797051`.
-
-### Comportamento em caso de falha
-- Se Make/Kommo falharem, **não** abrimos o WhatsApp (mantemos o comportamento atual de mostrar erro)
-- O WhatsApp só abre quando a submissão é bem-sucedida, garantindo que o lead já está registrado no CRM/planilha antes do contato
-
-### Considerações de UX
-- `window.open` em nova aba pode ser bloqueado por popup blockers em alguns navegadores. Como ele é disparado dentro de um handler de clique do usuário (`handleFinish` foi acionado pelo botão), a maioria dos navegadores permite normalmente
-- Em mobile, o link `wa.me` abre o app do WhatsApp diretamente
-- Em desktop, abre o WhatsApp Web
+| Campo | Ícone | Unicode |
+|---|---|---|
+| Título | 🏠 Casa | `\u{1F3E0}` |
+| Nome | 👤 Pessoa | `\u{1F464}` |
+| WhatsApp | 📱 Celular | `\u{1F4F1}` |
+| Cidade | 📍 Localização | `\u{1F4CD}` |
+| Detalhes | 💰 Dinheiro | `\u{1F4B0}` |
+| Tipo de Bem | 🏷️ Etiqueta | `\u{1F3F7}\u{FE0F}` |
+| Valor Pretendido | 💵 Nota | `\u{1F4B5}` |
+| Valor de Entrada | 💳 Cartão | `\u{1F4B3}` |
+| Parcela | 📅 Calendário | `\u{1F4C5}` |
+| Data | ⏰ Relógio | `\u{23F0}` |
 
 ## Critério de aceite
-Após preencher e finalizar a simulação:
-1. Os dados continuam sendo enviados para Make e Kommo (sem regressão)
-2. Uma nova aba abre no WhatsApp com a conversa para **81 99379-7051** já com a mensagem formatada pronta para envio
-3. O usuário é redirecionado para `/obrigado`
+Após preencher e finalizar a simulação, a mensagem que abre no WhatsApp deve mostrar todos os ícones renderizados corretamente (sem nenhum `�`), com cada campo tendo um ícone contextual diferente para ficar mais visual e profissional.
 
