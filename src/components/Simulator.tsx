@@ -380,19 +380,19 @@ const Simulator = () => {
   };
 
   return (
-    <section id="simulador" className="py-16 bg-background">
+    <section id="simulador" className="py-16 md:py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-3">
+          <div className="text-center mb-8 animate-fade-in">
+            <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-primary mb-3">
               Simulador de Crédito
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-base md:text-lg text-muted-foreground">
               Preencha os dados abaixo para receber sua simulação
             </p>
           </div>
 
-          <div className="bg-card rounded-2xl shadow-lg p-6 md:p-8 space-y-6">
+          <div className="bg-card rounded-2xl shadow-lg p-5 md:p-8 space-y-6 border border-border animate-blur-in">
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Progresso</span>

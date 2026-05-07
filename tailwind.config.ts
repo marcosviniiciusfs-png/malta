@@ -51,6 +51,19 @@ export default {
         orange: {
           DEFAULT: "hsl(var(--orange))",
         },
+        cta: {
+          DEFAULT: "hsl(var(--cta))",
+          hover: "hsl(var(--cta-hover))",
+        },
+        highlight: {
+          DEFAULT: "hsl(var(--highlight))",
+        },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+        },
+        whatsapp: {
+          DEFAULT: "hsl(var(--whatsapp))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -66,6 +79,18 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        heading: ["Montserrat", "system-ui", "sans-serif"],
+        body: ["Open Sans", "system-ui", "sans-serif"],
+      },
+      backgroundImage: {
+        "gradient-primary": "var(--gradient-primary)",
+        "gradient-accent": "var(--gradient-accent)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+        "card-hover": "var(--shadow-hover)",
       },
       keyframes: {
         "accordion-down": {

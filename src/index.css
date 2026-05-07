@@ -2,65 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Malta Consórcios - Design System (Brand orange palette)
+   Brand colors:
+     #F86C5F primary coral orange -> hsl(6 93% 62%)
+     #E04E40 deeper orange (CTA)  -> hsl(6 73% 56%)
+     #FFC107 amber highlight      -> hsl(45 100% 51%)
+     #FFD700 gold (stars only)    -> hsl(51 100% 50%)
+     #FFF5F2 light orange tint bg -> hsl(14 100% 97%)
+     #333333 body text            -> hsl(0 0% 20%)
+   All color tokens are stored as raw HSL components (no hsl() wrapper).
 */
 
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 15%;
+    --foreground: 0 0% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 15%;
+    --card-foreground: 0 0% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 15%;
+    --popover-foreground: 0 0% 18%;
 
-    --primary: 202 100% 11%;
+    --primary: 6 93% 62%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 202 100% 16%;
+    --primary-hover: 6 80% 56%;
 
-    --secondary: 206 68% 93%;
-    --secondary-foreground: 202 100% 11%;
+    --secondary: 14 100% 97%;
+    --secondary-foreground: 6 93% 38%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 14 50% 97%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 206 68% 73%;
-    --accent-foreground: 202 100% 11%;
+    --accent: 45 100% 51%;
+    --accent-foreground: 0 0% 18%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 202 100% 11%;
+    --border: 14 30% 90%;
+    --input: 14 30% 90%;
+    --ring: 6 93% 62%;
 
     --radius: 0.75rem;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(202 100% 11%), hsl(202 100% 16%));
-    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 4px 16px rgba(0, 31, 54, 0.15);
+
+    --gradient-primary: linear-gradient(135deg, hsl(6 93% 62%), hsl(12 85% 52%));
+    --gradient-accent: linear-gradient(135deg, hsl(12 85% 52%), hsl(45 100% 51%));
+    --shadow-card: 0 2px 8px rgba(248, 108, 95, 0.10);
+    --shadow-hover: 0 10px 28px rgba(248, 108, 95, 0.20);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 6 93% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 14 100% 95%;
+    --sidebar-accent-foreground: 6 93% 38%;
+    --sidebar-border: 14 30% 90%;
+    --sidebar-ring: 6 93% 62%;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-    
-    --header-footer: 6 93% 62%;
-    --orange: 6 93% 62%;
+    /* Brand-specific tokens */
+    --header-footer: 6 93% 62%;   /* coral orange header/footer */
+    --orange: 6 93% 62%;          /* legacy alias */
+    --cta: 6 80% 56%;             /* deeper orange CTA */
+    --cta-hover: 6 75% 48%;
+    --highlight: 45 100% 51%;     /* amber highlight (high contrast on orange) */
+    --gold: 51 100% 50%;          /* star ratings */
+    --whatsapp: 142 70% 49%;      /* WhatsApp green */
   }
 
   .dark {
@@ -110,5 +117,72 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in    { animation: fade-in 0.7s ease-out both; }
+  .animate-scale-in   { animation: scale-in 0.7s ease-out both; }
+  .animate-slide-up   { animation: slide-up 0.7s ease-out both; }
+  .animate-slide-left { animation: slide-left 0.7s ease-out both; }
+  .animate-slide-right{ animation: slide-right 0.7s ease-out both; }
+  .animate-blur-in    { animation: blur-in 0.9s ease-out both; }
+  .animate-float      { animation: float 6s ease-in-out infinite; }
+  .animate-pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-left {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-right {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(12px); transform: scale(1.04); }
+  to   { opacity: 1; filter: blur(0);    transform: scale(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-slide-up,
+  .animate-slide-left,
+  .animate-slide-right,
+  .animate-blur-in,
+  .animate-float,
+  .animate-pulse-soft {
+    animation: none !important;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
 }
