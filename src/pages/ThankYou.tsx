@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, ExternalLink } from "lucide-react";
+import { CheckCircle, ExternalLink, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
+
+const CONSULTANT_WHATSAPP_NUMBER = "5581993797051";
+const CONSULTANT_WHATSAPP_URL = `https://wa.me/${CONSULTANT_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  "Olá! Acabei de enviar minha simulação no site da Malta e gostaria de falar com um consultor agora."
+)}`;
 
 interface KommoProof {
   leadId: number;
@@ -34,12 +39,32 @@ const ThankYou = () => {
         </div>
         
         <div className="space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+          <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground">
             Obrigado!
           </h1>
           <p className="text-lg text-muted-foreground">
             Sua solicitação foi enviada com sucesso! Em breve entraremos em contato via WhatsApp.
           </p>
+        </div>
+
+        <div className="bg-secondary border border-border rounded-2xl p-5 md:p-6 space-y-4 animate-fade-in">
+          <p className="text-base md:text-lg font-medium text-foreground">
+            Para um atendimento mais rápido é só clicar no botão que você vai conversar com um consultor agora mesmo.
+          </p>
+          <Button
+            asChild
+            size="lg"
+            className="w-full bg-whatsapp hover:bg-whatsapp/90 text-white font-semibold rounded-full px-7 py-6 text-base hover:scale-105 transition-transform shadow-lg"
+          >
+            <a
+              href={CONSULTANT_WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageCircle className="mr-2 w-5 h-5" fill="currentColor" />
+              Falar com um consultor agora
+            </a>
+          </Button>
         </div>
 
         {isDebug && proof && (
