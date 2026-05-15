@@ -125,45 +125,62 @@ const Simulator = () => {
 
     try {
       console.log("Enviando dados para webhook e Kommo:", webhookData);
-      
-      // Send to Make and Kommo in parallel
+
+      // Cap Make at 8s so a slow/failing scenario does not block the user.
+      // Kommo (CRM) is the source of truth — Make is a Google Sheets backup.
+      const makePromise = fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(webhookData),
+        signal: AbortSignal.timeout(8000),
+      }).catch((err) => {
+        console.warn("Make webhook falhou (não bloqueia o fluxo):", err);
+        return null;
+      });
+
+      const kommoPromise = supabase.functions.invoke('send-to-kommo', {
+        body: kommoData,
+      });
+
       const [makeResult, kommoResult] = await Promise.allSettled([
-        fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(webhookData),
-        }),
-        supabase.functions.invoke('send-to-kommo', {
-          body: kommoData,
-        }),
+        makePromise,
+        kommoPromise,
       ]);
 
       // Process Kommo result and store proof
       let kommoSuccess = false;
       if (kommoResult.status === 'fulfilled') {
-        const { data: kommoData, error: kommoError } = kommoResult.value;
+        const { data: kommoResp, error: kommoError } = kommoResult.value;
         if (kommoError) {
           console.error("Erro ao enviar para Kommo:", kommoError);
-        } else if (kommoData?.success) {
+        } else if (kommoResp?.success) {
           kommoSuccess = true;
-          console.log("Kommo OK:", kommoData);
-          // Store proof in sessionStorage
+          console.log("Kommo OK:", kommoResp);
           try {
             sessionStorage.setItem('kommo_proof', JSON.stringify({
-              leadId: kommoData.leadId,
-              traceId: kommoData.traceId,
-              leadUrl: kommoData.leadUrl,
-              verified: kommoData.verified,
+              leadId: kommoResp.leadId,
+              traceId: kommoResp.traceId,
+              leadUrl: kommoResp.leadUrl,
+              verified: kommoResp.verified,
             }));
-          } catch (e) { /* ignore */ }
+          } catch { /* ignore */ }
         }
       } else {
         console.error("Erro ao enviar para Kommo:", kommoResult.reason);
       }
 
-      // Check if Make was successful
-      if (makeResult.status === 'fulfilled' && makeResult.value.ok) {
-        if (!kommoSuccess) {
+      const makeResponse =
+        makeResult.status === 'fulfilled' ? makeResult.value : null;
+      const makeOk = !!makeResponse && makeResponse.ok;
+      if (makeResult.status === 'fulfilled' && makeResponse && !makeResponse.ok) {
+        console.warn(`Make webhook respondeu ${makeResponse.status} (não bloqueia o fluxo).`);
+      }
+
+      // Success = lead salvo em pelo menos um canal (preferindo o CRM).
+      if (kommoSuccess || makeOk) {
+        if (kommoSuccess && !makeOk) {
+          console.info("Lead registrado no CRM; backup (planilha) será reprocessado.");
+        } else if (!kommoSuccess && makeOk) {
           toast({
             title: "Atenção",
             description: "Enviado para planilha, mas houve falha ao registrar no CRM. Será reprocessado.",
@@ -200,7 +217,7 @@ const Simulator = () => {
         setCurrentStep(0);
         navigate("/obrigado");
       } else {
-        throw new Error("Erro ao enviar dados para Make");
+        throw new Error("Falha ao registrar o lead (CRM e webhook indisponíveis)");
       }
     } catch (error) {
       console.error("Erro ao enviar:", error);
